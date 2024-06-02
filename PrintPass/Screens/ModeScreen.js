@@ -22,7 +22,7 @@ const ModeScreen = ({navigation}) => {
       </TouchableOpacity>
 
       <TouchableOpacity 
-      onPress={() => navigation.navigate("TakeAttendanceScreen")}
+      onPress={() => navigation.navigate("SessionSelectScreen")}
       style={styles.button}>
          <Text style={styles.buttonText}>Student</Text>
       </TouchableOpacity>

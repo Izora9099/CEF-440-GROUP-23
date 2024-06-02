@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
+import { useNavigation, useRoute } from '@react-navigation/native'; // Import the navigation and route hooks
 import images from '../../constants/images';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
@@ -9,6 +9,8 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 const TakeAttendanceScreen = () => {
   const [showClosingSession, setShowClosingSession] = useState(false);
   const navigation = useNavigation(); // Get the navigation object
+  const route = useRoute(); // Get the route object
+  const { courseCode, courseName, day, time } = route.params; // Destructure the parameters from the route
   const lineAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -45,21 +47,21 @@ const TakeAttendanceScreen = () => {
           <View style={styles.box}>
             {/** course */}
             <View style={styles.courseRow}>
-              <Text style={styles.font}>CEF440-</Text>
-              <Text style={styles.font}>Internet Programming</Text>
+              <Text style={styles.font}>{courseCode}-</Text>
+              <Text style={styles.font}>{courseName}</Text>
             </View>
             <View style={styles.timeRow}>
               <View style={styles.timeItem}>
                 <View style={styles.iconContainer}>
                   <Image source={images.calendar} style={styles.icon} />
                 </View>
-                <Text style={styles.timeText}>Monday</Text>
+                <Text style={styles.timeText}>{day}</Text>
               </View>
               <View style={styles.timeItem}>
                 <View style={styles.iconContainer}>
                   <Image source={images.clock} style={styles.icon} />
                 </View>
-                <Text style={styles.timeText}>7am - 9am</Text>
+                <Text style={styles.timeText}>{time}</Text>
               </View>
             </View>
           </View>

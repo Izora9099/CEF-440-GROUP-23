@@ -26,13 +26,9 @@ const StudentRegisterScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={30} color="#1E90FF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Register</Text>
-      </View>
+
+  <Image source={images.register} style={{width:'100%', height:'45%'}}/>
+  <Text style={styles.title}>Register Student</Text>
       <View style={styles.form}>
         <TextInput
           style={styles.input}
@@ -72,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 15,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: {
@@ -82,6 +78,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     paddingTop: StatusBar.currentHeight,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 30,
+    color: '#1E90FF',
+    top:'40%',
+    marginLeft:'20%',
+    position:'absolute',
   },
   backButton: {
     position: 'absolute',
@@ -101,11 +105,12 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50,
-    borderColor: '#1E90FF',
-    borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 25,
     paddingHorizontal: 10,
     marginBottom: 20,
+    backgroundColor:'#f2f2f2',
+    borderColor:"tranparent",
+    paddingHorizontal:20,
   },
   fingerprintContainer: {
     justifyContent: 'center',
@@ -123,10 +128,14 @@ const styles = StyleSheet.create({
     color: '#1E90FF',
   },
   registerButton: {
+    width: '80%',
     backgroundColor: '#1E90FF',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 5,
+    borderRadius: 25,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 10,
   },
   registerButtonText: {
     color: '#fff',

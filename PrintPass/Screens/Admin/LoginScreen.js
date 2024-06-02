@@ -47,7 +47,7 @@ const LoginScreen = ({navigation}) => {
             onChangeText={handlePasswordChange}
           />
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate("StudentRegisterScreen")} style={styles.loginBtn}>
+        <TouchableOpacity onPress={() => navigation.navigate("SessionScreen")} style={styles.loginBtn}>
           <Text style={styles.loginText}>LOGIN</Text>
         </TouchableOpacity>
       </View>

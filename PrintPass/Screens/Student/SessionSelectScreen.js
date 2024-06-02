@@ -1,36 +1,68 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import images from '../../constants/images';
+import { FontAwesome } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Assuming no sessions for demonstration
-const sessions = [];
+const SessionSelectScreen = ({ navigation }) => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-const SelectSessionScreen = () => {
-  const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [courseName, setCourseName] = useState('');
-  const [courseCode, setCourseCode] = useState('');
-  const [day, setDay] = useState('');
-  const [date, setDate] = useState('');
-
-  const handleAddSession = () => {
-    // Logic to handle adding a session
-    console.log(`Course Name: ${courseName}, Course Code: ${courseCode}, Day: ${day}, Date: ${date}`);
-    setModalVisible(false);
-    setCourseName('');
-    setCourseCode('');
-    setDay('');
-    setDate('');
+  const handleSelectSession = (session) => {
+    console.log(`Selected session ID: ${session.id}`);
+    navigation.navigate('TakeAttendanceScreen', {
+      courseCode: session.courseCode,
+      courseName: session.courseName,
+      day: session.day,
+      time: session.time,
+    });
   };
 
+  const sessions = [
+    { id: '1', courseName: 'Internet Programming', courseCode: 'CEF440', day: 'Monday', time: '7am - 9am' },
+    { id: '2', courseName: 'Database Systems', courseCode: 'CEF420', day: 'Tuesday', time: '10am - 12pm' },
+    { id: '3', courseName: 'Mobile App Development', courseCode: 'CEF450', day: 'Wednesday', time: '1pm - 3pm' },
+    // Add more sessions as needed
+  ];
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const filteredSessions = sessions.filter((session) =>
+    session.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    session.courseName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemText}>{item.title}</Text>
-    </View>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => handleSelectSession(item)}>
+      <View style={{ gap: 5 }}>
+        {/* course code and icons */}
+        <View style={styles.flexRow}>
+          <Text style={[styles.itemText, styles.font]}>{item.courseCode}</Text>
+          <View />
+        </View>
+        {/* course name */}
+        <Text style={[styles.itemText, styles.font]}>
+          {item.courseName.length > 40 ? `${item.courseName.slice(0, 40)}...` : item.courseName}
+        </Text>
+      </View>
+      {/* day and time */}
+      <View style={styles.flexRow}>
+        <View style={styles.flexDate}>
+          <View style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
+            <FontAwesome name="calendar" size={17} color="#1E90FF" />
+            <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
+          </View>
+          <View style={{ display: 'flex', flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
+            <FontAwesome name="clock-o" size={20} color="#1E90FF" />
+            <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -38,72 +70,55 @@ const SelectSessionScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" translucent={true} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#1E90FF" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Select Session</Text>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Icon name="add" size={24} color="#000" />
-        </TouchableOpacity>
+        <Text style={styles.headerText}>Sessions</Text>
+        <View />
       </View>
-      <FlatList
-        data={sessions}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-              <Image source={images.add} style={{ width: '100%', height: '100%' }} />
-            </View>
-            <Text style={styles.emptyText}>Add A Session...</Text>
-          </View>
-        )}
-      />
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Session</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Course Name"
-              value={courseName}
-              onChangeText={setCourseName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Course Code"
-              value={courseCode}
-              onChangeText={setCourseCode}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Day"
-              value={day}
-              onChangeText={setDay}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Date"
-              value={date}
-              onChangeText={setDate}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={handleAddSession}>
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <View style={styles.searchContainer}>
+        <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Search by course code or name"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+      </View>
+
+      <FlatList
+        data={filteredSessions}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={() => {
+          if (sessions.length === 0) {
+            return (
+              <View style={styles.emptyContainer}>
+                <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                  <Image source={images.no_session} style={{ width: '100%', height: '100%' }} />
+                </View>
+                <Text style={styles.emptyText}>Admin hasn't added a session yet</Text>
+              </View>
+            );
+          } else if (searchQuery && filteredSessions.length === 0) {
+            return (
+              <View style={styles.emptyContainer}>
+                <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                  <Image source={images.not_found} style={{ width: '100%', height: '100%' }} />
+                </View>
+                <Text style={styles.emptyText}>Course not found</Text>
+              </View>
+            );
+          }
+          return null;
+        }}
+      />
     </View>
   );
 };
 
-export default SelectSessionScreen;
+export default SessionSelectScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -115,7 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 15,
     paddingVertical: 12,
     backgroundColor: '#f5f5f5',
     width: '100%',
@@ -130,8 +145,33 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#000',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    margin: 16,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchBar: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
     color: '#000',
   },
   listContent: {
@@ -140,15 +180,44 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     padding: 16,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#fff',
     marginBottom: 10,
     borderRadius: 8,
     width: screenWidth - 32,
     alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    gap: 10,
   },
   itemText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#000',
+  },
+  font: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  smallFont: {
+    fontSize: 13,
+  },
+  flex: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  flexDate: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  flexRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   emptyContainer: {
     flex: 1,
@@ -158,43 +227,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     color: '#000',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: screenWidth - 40,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderBottomWidth: 1,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  addButton: {
-    backgroundColor: '#1E90FF',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

@@ -10,8 +10,9 @@ const images = {
     fingerprint_scanner: require('../assets/images/biometric.png'),
    // error : require('../assets/images/error.jpg'),
     add : require('../assets/images/add.jpg'),
-    register: require('../assets/images/register.jpg')
-    
+    register: require('../assets/images/register.jpg'),
+    no_session: require('../assets/images/no_session.jpg'),
+    not_found: require('../assets/images/not_found.jpg')
 
    
   };
