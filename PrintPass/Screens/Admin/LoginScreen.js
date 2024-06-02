@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ImageBackgr
 import images from '../../constants/images';
 import { AntDesign } from '@expo/vector-icons';
 
-const LoginScreen = () => {
+const LoginScreen = ({navigation}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -23,7 +23,7 @@ const LoginScreen = () => {
    
       <View style={styles.container}>
         <Text style={styles.title}>Login</Text>
-        <Image source={images.login_pic} style={{width:'100%', height:'40%'}}/>
+        <Image source={images.login_pic} style={{width:'100%', height:'45%'}}/>
         <View style={styles.inputView}>
           <View style={styles.iconContainer}>
             <AntDesign name="user" size={20} color="gray" />
@@ -47,7 +47,7 @@ const LoginScreen = () => {
             onChangeText={handlePasswordChange}
           />
         </View>
-        <TouchableOpacity onPress={handleLoginPress} style={styles.loginBtn}>
+        <TouchableOpacity onPress={() => navigation.navigate("StudentRegisterScreen")} style={styles.loginBtn}>
           <Text style={styles.loginText}>LOGIN</Text>
         </TouchableOpacity>
       </View>

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
-import images from '../../constants/images';
+import images from '../constants/images';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 

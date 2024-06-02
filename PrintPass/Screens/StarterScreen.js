@@ -8,11 +8,17 @@ const StarterScreen = ({navigation}) => {
     <View className="flex-1 items-center justify-center bg-[#ffff]">
       <Text style={styles.welcome}>PrintPass</Text>
 
-      <Image
-        source={images.phone}
-      />
+<View style={{
+    height:'65%',
+    width: '90%',
+    backgroundColor:'red',
+    marginBottom:10,
+}}>
+ <Image source={images.phone} style={{height:'100%' , width:'100%'}}/>
+</View>
+    <Image source={images.logo} style={styles.logo} />
       <TouchableOpacity 
-      onPress={() => navigation.navigate("IntroScreen")}
+      onPress={() => navigation.replace("IntroScreen")}
       style={styles.button}>
          <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>

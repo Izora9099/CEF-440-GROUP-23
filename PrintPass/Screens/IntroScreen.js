@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, Button, Animated } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, Button, Animated, SafeAreaView , StatusBar} from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import Dots from 'react-native-dots-pagination';
 import { useNavigation } from '@react-navigation/native';
 import images from '../constants/images';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const onboardingData = [
   {
@@ -35,18 +35,23 @@ const IntroScreen = () => {
 
   const renderItem = ({ item, index }) => (
     <View style={[styles.slide, { backgroundColor: item.color }]}>
-     {index === onboardingData.length - 1 && (
-        <Text onPress={() => navigation.navigate('ModeScreen')} className="right-[-45%] top-[-4%] text-[#1E90FF] text-[                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     20px]">Next</Text>
+      {index < onboardingData.length - 1 ? (
+        <Text onPress={() => navigation.navigate('ModeScreen')} style={styles.skip}>
+          {index === 0 ? "Skip" : "Skip"}
+        </Text>
+      ) : (
+        <Text onPress={() => navigation.navigate('ModeScreen')} style={styles.skip}>
+          Next
+        </Text>
       )}
       <Image source={item.image} style={styles.image} />
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.description}>{item.description}</Text>
-     
     </View>
   );
 
   return (
-    <View style={styles.container}>
+     <View style={styles.container}>
       <Carousel
         ref={carouselRef}
         data={onboardingData}
@@ -70,14 +75,17 @@ const IntroScreen = () => {
           paddingHorizontal={10}
         />
       </View>
-    </View>
+      </View>
+   
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
+    backgroundColor: '#fff',
+    paddingVertical:20,
+    },
   slide: {
     flex: 1,
     justifyContent: 'center',
@@ -106,6 +114,13 @@ const styles = StyleSheet.create({
     bottom: 50,
     width: '100%',
     alignItems: 'center',
+  },
+  skip: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    fontSize: 18,
+    color: '#1E90FF', // Adjust color as needed
   },
 });
 

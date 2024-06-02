@@ -14,7 +14,7 @@ const ModeScreen = ({navigation}) => {
      </View>
      {/** <Image source={images.role} style={styles.mode_pic} /> */}
     
-      <View className="gap-5 mt-5">
+      <View className="gap-5 mt-10">
       <TouchableOpacity 
       onPress={() => navigation.navigate("LoginScreen")}
       style={styles.button}>
@@ -22,7 +22,7 @@ const ModeScreen = ({navigation}) => {
       </TouchableOpacity>
 
       <TouchableOpacity 
-      onPress={() => navigation.navigate("")}
+      onPress={() => navigation.navigate("TakeAttendanceScreen")}
       style={styles.button}>
          <Text style={styles.buttonText}>Student</Text>
       </TouchableOpacity>

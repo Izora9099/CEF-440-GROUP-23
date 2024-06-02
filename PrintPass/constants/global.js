@@ -1,8 +1,14 @@
 // global.js
 import { StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
  {/**#57abd9 */}
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    marginTop:StatusBar.currentHeight
+    },
   welcome: {
     fontSize: 46,
     textAlign: 'center',
