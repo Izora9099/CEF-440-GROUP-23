@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, TextInput ,ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import images from '../../constants/images';
 import { FontAwesome } from '@expo/vector-icons';
+import { firestore } from '../../Firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import images from '../../constants/images';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const SessionSelectScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState([]);
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      const sessionSnapshot = await getDocs(collection(firestore, 'sessions'));
+      const sessionList = sessionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSessions(sessionList);
+      setLoading(false);
+    };
+
+    fetchSessions();
+  }, []);
 
   const handleSelectSession = (session) => {
     console.log(`Selected session ID: ${session.id}`);
@@ -19,13 +34,6 @@ const SessionSelectScreen = ({ navigation }) => {
       time: session.time,
     });
   };
-
-  const sessions = [
-    { id: '1', courseName: 'Internet Programming', courseCode: 'CEF440', day: 'Monday', time: '7am - 9am' },
-    { id: '2', courseName: 'Database Systems', courseCode: 'CEF420', day: 'Tuesday', time: '10am - 12pm' },
-    { id: '3', courseName: 'Mobile App Development', courseCode: 'CEF450', day: 'Wednesday', time: '1pm - 3pm' },
-    // Add more sessions as needed
-  ];
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -86,34 +94,40 @@ const SessionSelectScreen = ({ navigation }) => {
         />
       </View>
 
-      <FlatList
-        data={filteredSessions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={() => {
-          if (sessions.length === 0) {
-            return (
-              <View style={styles.emptyContainer}>
-                <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-                  <Image source={images.no_session} style={{ width: '100%', height: '100%' }} />
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#1E90FF" />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredSessions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={() => {
+            if (sessions.length === 0) {
+              return (
+                <View style={styles.emptyContainer}>
+                  <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                    <Image source={images.no_session} style={{ width: '100%', height: '100%', top:-40 }} />
+                  </View>
+                  <Text style={styles.emptyText}>Admin hasn't added a session yet</Text>
                 </View>
-                <Text style={styles.emptyText}>Admin hasn't added a session yet</Text>
-              </View>
-            );
-          } else if (searchQuery && filteredSessions.length === 0) {
-            return (
-              <View style={styles.emptyContainer}>
-                <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-                  <Image source={images.not_found} style={{ width: '100%', height: '100%' }} />
+              );
+            } else if (searchQuery && filteredSessions.length === 0) {
+              return (
+                <View style={styles.emptyContainer}>
+                  <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                    <Image source={images.not_found} style={{ width: '100%', height: '100%', top:-40 }} />
+                  </View>
+                  <Text style={styles.emptyText}>Course not found</Text>
                 </View>
-                <Text style={styles.emptyText}>Course not found</Text>
-              </View>
-            );
-          }
-          return null;
-        }}
-      />
+              );
+            }
+            return null;
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -227,5 +241,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     color: '#000',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

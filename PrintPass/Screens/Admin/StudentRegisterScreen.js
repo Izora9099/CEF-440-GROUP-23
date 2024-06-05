@@ -1,34 +1,66 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, StatusBar, Image, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { firestore } from '../../Firebase';  // Ensure the correct path to your firebase.js
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import images from '../../constants/images';
 
 const StudentRegisterScreen = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [matricule, setMatricule] = useState('');
-  const [fingerprintRegistered, setFingerprintRegistered] = useState(false);
+  const [fingerprintData, setFingerprintData] = useState(false);
 
-  const handleFingerprintRegistration = () => {
-    // Placeholder for fingerprint registration logic
-    // This should be replaced with the actual logic to register a fingerprint
-    Alert.alert("Fingerprint Registration", "Fingerprint registered successfully!");
-    setFingerprintRegistered(true);
+  const handleFingerprintRegistration = async () => {
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (hasHardware && isEnrolled) {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Authenticate with fingerprint',
+        });
+
+        if (result.success) {
+          Alert.alert("Fingerprint Registration", "Fingerprint registered successfully!");
+          setFingerprintData(true);
+        } else {
+          Alert.alert("Fingerprint Registration", "Fingerprint registration failed. Please try again.");
+        }
+      } else {
+        Alert.alert("Fingerprint Registration", "Your device does not support fingerprint authentication.");
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Fingerprint Registration", "An error occurred during fingerprint registration.");
+    }
   };
 
-  const handleRegister = () => {
-    // Placeholder for registration logic
-    // This should be replaced with the actual logic to handle the registration
-    Alert.alert("Registration", "Registration successful!");
-    navigation.goBack();
+  const handleRegister = async () => {
+    if (name.trim() === '' || matricule.trim() === '') {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      await addDoc(collection(firestore, 'students'), { // Add data directly using addDoc
+        name: name,
+        matricule: matricule,
+        fingerprintData: fingerprintData,
+      });
+      Alert.alert('Success', 'Student registered successfully');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error registering student: ', error);
+      Alert.alert('Error', 'Failed to register student');
+    }
   };
 
   return (
     <View style={styles.container}>
-
-  <Image source={images.register} style={{width:'100%', height:'45%'}}/>
-  <Text style={styles.title}>Register Student</Text>
+      <Image source={images.register} style={{ width: '100%', height: '45%' }} />
+      <Text style={styles.title}>Register Student</Text>
       <View style={styles.form}>
         <TextInput
           style={styles.input}
@@ -45,7 +77,7 @@ const StudentRegisterScreen = () => {
         <TouchableOpacity style={styles.fingerprintContainer} onPress={handleFingerprintRegistration}>
           <Image source={images.fingerprint_scanner} style={styles.fingerprintImage} />
           <Text style={styles.fingerprintText}>
-            {fingerprintRegistered ? "Fingerprint Registered" : "Register Fingerprint"}
+            {fingerprintData ? "Fingerprint Registered" : "Register Fingerprint"}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
@@ -63,38 +95,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    paddingTop: StatusBar.currentHeight,
-  },
   title: {
     fontWeight: 'bold',
     fontSize: 30,
     color: '#1E90FF',
-    top:'40%',
-    marginLeft:'20%',
-    position:'absolute',
-  },
-  backButton: {
+    top: '40%',
+    marginLeft: '20%',
     position: 'absolute',
-    left: 10,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1E90FF',
   },
   form: {
     flex: 1,
@@ -106,11 +113,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     borderRadius: 25,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     marginBottom: 20,
-    backgroundColor:'#f2f2f2',
-    borderColor:"tranparent",
-    paddingHorizontal:20,
+    backgroundColor: '#f2f2f2',
   },
   fingerprintContainer: {
     justifyContent: 'center',

@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 2,
+    gap: -5,
   },
   iconContainer: {
     padding: 10,
@@ -161,12 +161,12 @@ const styles = StyleSheet.create({
     height: 50,
   },
   font: {
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: '800',
     color: '#fff',
   },
   timeText: {
-    fontSize: 18,
+    fontSize: 15,
     color: '#fff',
   },
   fingerprintContainer: {

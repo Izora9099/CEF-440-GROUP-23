@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, Modal, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, Modal, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import images from '../../constants/images';
 import { FontAwesome } from '@expo/vector-icons';
+import { firestore } from '../../Firebase'; 
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import images from '../../constants/images';
 
 const { width: screenWidth } = Dimensions.get('window');
-
-// Assuming no sessions for demonstration
-const initialSessions = [];
 
 const SessionScreen = () => {
   const navigation = useNavigation();
@@ -19,37 +18,72 @@ const SessionScreen = () => {
   const [courseCode, setCourseCode] = useState('');
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
-  const [sessions, setSessions] = useState(initialSessions);
+  const [sessions, setSessions] = useState([]);
 
-  const handleAddSession = () => {
-    if (editMode) {
-      const updatedSessions = sessions.map(session => 
-        session.id === currentSessionId ? { ...session, courseName, courseCode, day, time } : session
-      );
-      setSessions(updatedSessions);
-      setEditMode(false);
-      setCurrentSessionId(null);
-    } else {
-      const newSession = {
-        id: (sessions.length + 1).toString(),
-        courseName,
-        courseCode,
-        day,
-        time,
-      };
-      setSessions([...sessions, newSession]);
+  useEffect(() => {
+    const fetchSessions = async () => {
+      const querySnapshot = await getDocs(collection(firestore, 'sessions'));
+      const sessionsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSessions(sessionsList);
+    };
+
+    fetchSessions();
+  }, []);
+
+  //function to add courses
+  const handleAddSession = async () => {
+    if (!courseCode || !courseName || !day || !time) {
+      Alert.alert('Error', 'Please fill in all fields.');
+      return;
     }
 
-    setModalVisible(false);
-    setCourseName('');
-    setCourseCode('');
-    setDay('');
-    setTime('');
+    try {
+      if (editMode) {
+        const sessionDocRef = doc(firestore, 'sessions', currentSessionId);
+        await updateDoc(sessionDocRef, { courseName, courseCode, day, time });
+        setSessions(sessions.map(session => 
+          session.id === currentSessionId ? { ...session, courseName, courseCode, day, time } : session
+        ));
+        setEditMode(false);
+        setCurrentSessionId(null);
+      } else {
+        const docRef = await addDoc(collection(firestore, 'sessions'), {
+          courseName,
+          courseCode,
+          day,
+          time,
+        });
+        const newSession = {
+          id: docRef.id,
+          courseName,
+          courseCode,
+          day,
+          time,
+        };
+        setSessions([...sessions, newSession]);
+      }
+
+      setModalVisible(false);
+      setCourseName('');
+      setCourseCode('');
+      setDay('');
+      setTime('');
+      console.log('Session Added')
+    } catch (error) {
+      console.error('Error adding session: ', error);
+      Alert.alert('Error', 'An error occurred while adding the session.');
+    }
   };
 
-  const handleDeleteSession = id => {
-    const updatedSessions = sessions.filter(session => session.id !== id);
-    setSessions(updatedSessions);
+  const handleDeleteSession = async (id) => {
+    try {
+      await deleteDoc(doc(firestore, 'sessions', id));
+      setSessions(sessions.filter(session => session.id !== id));
+      console.log('session deleted')
+    } catch (error) {
+      console.error('Error deleting session: ', error);
+      Alert.alert('Error', 'An error occurred while deleting the session.');
+    }
   };
 
   const handleEditSession = id => {
@@ -61,51 +95,43 @@ const SessionScreen = () => {
       setTime(sessionToEdit.time);
       setCurrentSessionId(id);
       setEditMode(true);
-      setModalVisible(true);
+      setModalVisible(true); 
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={{gap: 5}}>
-
-      {/**course code and icons */}
-      <View style={styles.flexRow}>
-      <Text style={[styles.itemText, styles.font]}>{item.courseCode}</Text>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => handleEditSession(item.id)}>
-            <Icon name="create-outline" size={22} color="#1E90FF" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteSession(item.id)}>
-            <Icon name="trash-outline" size={22} color="#FF6347" />
-          </TouchableOpacity>
+        <View style={styles.flexRow}>
+          <Text style={[styles.itemText, styles.font]}>{item.courseCode}</Text>
+          <View style={styles.iconContainer}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => handleEditSession(item.id)}>
+              <Icon name="create-outline" size={22} color="#1E90FF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteSession(item.id)}>
+              <Icon name="trash-outline" size={22} color="#FF6347" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-
-       {/**course name */}
         <Text style={[styles.itemText, styles.font]} className='mb-2'>
           {item.courseName.length > 40 ? `${item.courseName.slice(0, 40)}...` : item.courseName}
         </Text>
       </View>
-
-      {/**day and time */}
       <View style={styles.flexRow}>
         <View style={styles.flexDate}>
-            <View style={{display:'flex', flexDirection:'row', gap:4, justifyContent:'center', alignItems:'center'}}>
-              <FontAwesome name="calendar" size={17} color="#1E90FF" />
-              <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
-            </View>
-
-              <View style={{display:'flex', flexDirection:'row', gap:5, justifyContent:'center', alignItems:'center'}}>
-                  <FontAwesome name="clock-o" size={20} color="#1E90FF" />
-                  <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
-              </View>
-        </View>       
+          <View style={{display:'flex', flexDirection:'row', gap:4, justifyContent:'center', alignItems:'center'}}>
+            <FontAwesome name="calendar" size={17} color="#1E90FF" />
+            <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
+          </View>
+          <View style={{display:'flex', flexDirection:'row', gap:5, justifyContent:'center', alignItems:'center'}}>
+            <FontAwesome name="clock-o" size={20} color="#1E90FF" />
+            <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
-  
-  
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" translucent={true} />
@@ -115,10 +141,10 @@ const SessionScreen = () => {
         </TouchableOpacity>
         <Text style={styles.headerText}>Sessions</Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
-        <View style= {styles.flex} >
-        <Text className=' text-[#1E90FF] '>Add</Text><Icon name="add" size={24} color="#1E90FF" />
-        </View>
-         
+          <View style={styles.flex}>
+            <Text className='text-[#1E90FF]'>Add</Text>
+            <Icon name="add" size={24} color="#1E90FF" />
+          </View>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -135,7 +161,6 @@ const SessionScreen = () => {
           </View>
         )}
       />
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -236,34 +261,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    gap:10,
+    gap: 10,
   },
-  
   itemText: {
     fontSize: 15,
     color: '#000',
   },
-  font:{
-    fontSize:15,
-    fontWeight:'bold'
+  font: {
+    fontSize: 15,
+    fontWeight: 'bold',
   },
-smallFont:{
-  fontSize:13,
-},
+  smallFont: {
+    fontSize: 13,
+  },
   flex: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  flexDate:{
+  flexDate: {
     flexDirection: 'row',
-    gap:20,
+    gap: 20,
   },
   flexRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -319,7 +342,7 @@ smallFont:{
   iconContainer: {
     flexDirection: 'row',
     gap: 7,
-    marginLeft:10,
+    marginLeft: 10,
   },
   iconButton: {
     padding: 5,

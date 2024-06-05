@@ -16,7 +16,7 @@ import StudentRegisterScreen from '../Screens/Admin/StudentRegisterScreen';
 {/* student screens */}
 import SessionSelectScreen from '../Screens/Student/SessionSelectScreen';
 import TakeAttendanceScreen from '../Screens/Student/TakeAttendanceScreen';
-
+import AdminDashboard from '../Screens/Admin/AdminDashboard';
 
 
 
@@ -31,8 +31,10 @@ function Navigation() {
         <Stack.Screen name="ModeScreen" component={ModeScreen} />
         {/****admin screens */}
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name='AdminDashboard' component={AdminDashboard}/>
         <Stack.Screen name="SessionScreen" component={SessionScreen} />
         <Stack.Screen name="StudentRegisterScreen" component={StudentRegisterScreen} />
+
 
 
 
