@@ -11,12 +11,13 @@ import ModeScreen from '../Screens/ModeScreen';
 import LoginScreen from '../Screens/Admin/LoginScreen';
 import SessionScreen from '../Screens/Admin/SessionScreen';
 import StudentRegisterScreen from '../Screens/Admin/StudentRegisterScreen';
-
+import ReportGeneratorScreen from '../Screens/Admin/ReportGeneratorScreen';
 
 {/* student screens */}
 import SessionSelectScreen from '../Screens/Student/SessionSelectScreen';
 import TakeAttendanceScreen from '../Screens/Student/TakeAttendanceScreen';
 import AdminDashboard from '../Screens/Admin/AdminDashboard';
+
 
 
 
@@ -29,21 +30,19 @@ function Navigation() {
         <Stack.Screen name="StarterScreen" component={StarterScreen} />
         <Stack.Screen name="IntroScreen" component={IntroScreen} />
         <Stack.Screen name="ModeScreen" component={ModeScreen} />
+
         {/****admin screens */}
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name='AdminDashboard' component={AdminDashboard}/>
         <Stack.Screen name="SessionScreen" component={SessionScreen} />
         <Stack.Screen name="StudentRegisterScreen" component={StudentRegisterScreen} />
-
-
+        <Stack.Screen name="ReportGeneratorScreen" component={ReportGeneratorScreen} />
 
 
         {/**student screens */}
         <Stack.Screen name="SessionSelectScreen" component={SessionSelectScreen} />
         <Stack.Screen name="TakeAttendanceScreen" component={TakeAttendanceScreen} />
         
-
-
       </Stack.Navigator>
     </NavigationContainer>
   );

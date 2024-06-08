@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { firestore } from '../../Firebase';  // Ensure the correct path to your firebase.js
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import images from '../../constants/images';
+import * as Crypto from 'expo-crypto';
 
 const StudentRegisterScreen = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [matricule, setMatricule] = useState('');
   const [fingerprintData, setFingerprintData] = useState(false);
+  const [uniqueIdentifier, setUniqueIdentifier] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const generateUniqueIdentifier = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 4; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  };
 
   const handleFingerprintRegistration = async () => {
     try {
@@ -23,8 +35,10 @@ const StudentRegisterScreen = () => {
         });
 
         if (result.success) {
-          Alert.alert("Fingerprint Registration", "Fingerprint registered successfully!");
+          const identifier = generateUniqueIdentifier();
+          setUniqueIdentifier(identifier);
           setFingerprintData(true);
+          Alert.alert("Fingerprint Registration", `Fingerprint registered successfully, Click on Register!`);
         } else {
           Alert.alert("Fingerprint Registration", "Fingerprint registration failed. Please try again.");
         }
@@ -44,17 +58,28 @@ const StudentRegisterScreen = () => {
     }
 
     try {
-      await addDoc(collection(firestore, 'students'), { // Add data directly using addDoc
+      const hashedIdentifier = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        uniqueIdentifier
+      );
+
+      await addDoc(collection(firestore, 'students'), { 
         name: name,
         matricule: matricule,
-        fingerprintData: fingerprintData,
+        fingerprintRegistered: fingerprintData,
+        uniqueIdentifier: uniqueIdentifier,
+        hashedUniqueIdentifier: hashedIdentifier,
       });
-      Alert.alert('Success', 'Student registered successfully');
-      navigation.goBack();
+      setIsModalVisible(true);
     } catch (error) {
       console.error('Error registering student: ', error);
       Alert.alert('Error', 'Failed to register student');
     }
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    navigation.goBack();
   };
 
   return (
@@ -84,6 +109,23 @@ const StudentRegisterScreen = () => {
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Success</Text>
+            <Text style={styles.modalText}>{name}, your unique identifier is:</Text>
+            <Text style={styles.identifierText}>{uniqueIdentifier}</Text>
+            <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -144,6 +186,54 @@ const styles = StyleSheet.create({
   },
   registerButtonText: {
     color: '#fff',
+    fontSize: 18,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#1E90FF',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  identifierText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1E90FF',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#1E90FF',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 10,
+  },
+  modalButtonText: {
+    color: 'white',
     fontSize: 18,
   },
 });

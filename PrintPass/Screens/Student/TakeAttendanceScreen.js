@@ -1,16 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing, ActivityIndicator, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useRoute } from '@react-navigation/native'; // Import the navigation and route hooks
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { firestore } from '../../Firebase';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as Crypto from 'expo-crypto';
 import images from '../../constants/images';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 const TakeAttendanceScreen = () => {
   const [showClosingSession, setShowClosingSession] = useState(false);
-  const navigation = useNavigation(); // Get the navigation object
-  const route = useRoute(); // Get the route object
-  const { courseCode, courseName, day, time } = route.params; // Destructure the parameters from the route
+  const [uniqueIdentifier, setUniqueIdentifier] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [attendanceData, setAttendanceData] = useState({});
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { courseCode, courseName, day, time } = route.params;
   const lineAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -18,34 +25,89 @@ const TakeAttendanceScreen = () => {
       Animated.timing(lineAnimation, {
         toValue: 1,
         duration: 2000,
-        easing: Easing.inOut(Easing.ease), // Use Easing.inOut for ease-in-out effect
+        easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
       })
     ).start();
   }, [lineAnimation]);
 
+  useEffect(() => {
+    if (isModalVisible) {
+      // Clear text input when modal is visible
+      setUniqueIdentifier('');
+    }
+  }, [isModalVisible]);
+
   const translateY = lineAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [-110, 100],
+    outputRange: [-115, 100],
   });
+
+  const handleFingerprintAuthentication = async () => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Authenticate with fingerprint',
+      });
+
+      if (result.success) {
+        const hashedIdentifier = await Crypto.digestStringAsync(
+          Crypto.CryptoDigestAlgorithm.SHA256,
+          uniqueIdentifier
+        );
+
+        const studentsSnapshot = await getDocs(collection(firestore, 'students'));
+        let studentMatch = null;
+
+        studentsSnapshot.forEach(doc => {
+          const studentData = doc.data();
+          if (studentData.hashedUniqueIdentifier === hashedIdentifier) {
+            studentMatch = studentData;
+          }
+        });
+
+        if (studentMatch) {
+          const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+          const attendanceRecord = {
+            studentName: studentMatch.name,
+            courseCode: courseCode,
+            courseName: courseName,
+            day: day,
+            time: time,
+            date: date
+          };
+
+          await addDoc(collection(firestore, 'attendances'), attendanceRecord);
+
+          setAttendanceData(attendanceRecord);
+          setIsModalVisible(true);
+        } else {
+          Alert.alert('Error', 'Authentication failed. Please check your unique identifier and try again.');
+        }
+      } else {
+        Alert.alert('Error', 'Fingerprint authentication failed. Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred during fingerprint authentication.');
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        {/* Left Arrow Icon */}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={30} color="#1E90FF" />
         </TouchableOpacity>
-        {/* Title */}
         <Text style={styles.headerTitle}>Mark Attendance</Text>
       </View>
 
       {!showClosingSession ? (
         <>
-          {/** course and time display */}
           <View style={styles.box}>
-            {/** course */}
             <View style={styles.courseRow}>
               <Text style={styles.font}>{courseCode}-</Text>
               <Text style={styles.font}>{courseName}</Text>
@@ -65,18 +127,37 @@ const TakeAttendanceScreen = () => {
               </View>
             </View>
           </View>
-          {/** course and time display */}
 
-          {/** fingerprint scanner */}
-          <View style={styles.fingerprintContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Unique Identifier"
+            value={uniqueIdentifier}
+            onChangeText={setUniqueIdentifier}
+          />
+
+          <TouchableOpacity style={styles.fingerprintContainer} onPress={handleFingerprintAuthentication}>
             <Image source={images.fingerprint_scanner} style={[styles.fingerprintImage, { tintColor: '#1E90FF' }]} />
             <Animated.View style={[styles.animatedLine, { transform: [{ translateY }] }]} />
-          </View>
+          </TouchableOpacity>
 
-          {/** instruction */}
           <View style={styles.instructionContainer}>
             <Text style={styles.instructionText}>Place registered finger on scanner</Text>
           </View>
+
+          <Modal visible={isModalVisible} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalTitle}>Attendance Taken ✅</Text>
+                <View style={{justifyContent:'center', alignItems:'center'}}>
+                  <Text style={styles.modalTextBold}>{attendanceData.studentName}</Text>
+                  <Text style={styles.modalText}>Your attendance has been taken</Text>
+                </View>
+                <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
+                  <Text style={styles.modalButtonText}> OK </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </>
       ) : (
         <View style={styles.closingSessionContainer}>
@@ -121,13 +202,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E90FF",
     padding: 15,
     margin: 10,
-    marginLeft:'6%',
-    marginTop:'5%',
+    marginLeft: '6%',
+    marginTop: '5%',
     borderRadius: 10,
     width: '90%',
     height: 150,
     gap: 15,
-    // Shadow for iOS
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -135,7 +215,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    // Shadow for Android
     elevation: 5,
   },
   courseRow: {
@@ -169,13 +248,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
   },
+  input: {
+    width: '80%',
+    height: 50,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: '#f2f2f2',
+    alignSelf: 'center',
+  },
   fingerprintContainer: {
     width: 200,
     height: 200,
-    marginTop: '30%',
+    marginTop: '20%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft:'20%'
+    alignSelf: 'center',
   },
   fingerprintImage: {
     width: '100%',
@@ -206,5 +294,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     color: '#1E90FF',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color:'#1E90FF'
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  modalTextBold: {
+    fontSize: 20,
+    marginBottom: 10,
+    fontWeight: 'bold'
+  },
+  modalButton: {
+    backgroundColor: '#1E90FF',
+    padding: 10,
+    paddingHorizontal:20,
+    borderRadius: 10,
+    marginTop: 15,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

@@ -12,7 +12,8 @@ const images = {
     add : require('../assets/images/add.jpg'),
     register: require('../assets/images/register.jpg'),
     no_session: require('../assets/images/no_session.jpg'),
-    not_found: require('../assets/images/not_found.jpg')
+    not_found: require('../assets/images/not_found.jpg'),
+    report: require('../assets/images/report.jpg')
 
    
   };
