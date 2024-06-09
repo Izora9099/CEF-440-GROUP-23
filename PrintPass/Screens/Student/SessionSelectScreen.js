@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, TextInput ,ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensions, Platform, Image, TextInput, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -14,12 +14,19 @@ const SessionSelectScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
+  const [error, setError] = useState(false); // Error state
 
   useEffect(() => {
     const fetchSessions = async () => {
-      const sessionSnapshot = await getDocs(collection(firestore, 'sessions'));
-      const sessionList = sessionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSessions(sessionList);
+      try {
+        const sessionSnapshot = await getDocs(collection(firestore, 'sessions'));
+        const sessionList = sessionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSessions(sessionList);
+        setError(false); // Reset error state on success
+      } catch (error) {
+        console.error('Error fetching sessions: ', error);
+        setError(true); // Set error state on failure
+      }
       setLoading(false);
     };
 
@@ -62,14 +69,14 @@ const SessionSelectScreen = ({ navigation }) => {
       <View style={styles.flexRow}>
         <View style={styles.flexDate}>
           <View style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{height:20, width:20,}}>
-               <Image source={images.calendar_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            <View style={{ height: 20, width: 20 }}>
+              <Image source={images.calendar_icon} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
             </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
           </View>
           <View style={{ display: 'flex', flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{height:20, width:20,}}>
-               <Image source={images.clock_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            <View style={{ height: 20, width: 20 }}>
+              <Image source={images.clock_icon} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
             </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
           </View>
@@ -83,9 +90,9 @@ const SessionSelectScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" translucent={true} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-        <View style={{height:20, width:20,}}>
-               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
-            </View>
+          <View style={{ height: 20, width: 20 }}>
+            <Image source={images.left_arrow} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
+          </View>
         </TouchableOpacity>
         <Text style={styles.headerText}>Sessions</Text>
         <View />
@@ -105,6 +112,12 @@ const SessionSelectScreen = ({ navigation }) => {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#1E90FF" />
         </View>
+      ) : error ? (
+        <View style={styles.emptyContainer}>
+          <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                <Image source={images.error} style={{ width: '100%', height: '100%' }} />
+            </View>
+        </View>
       ) : (
         <FlatList
           data={filteredSessions}
@@ -116,7 +129,7 @@ const SessionSelectScreen = ({ navigation }) => {
               return (
                 <View style={styles.emptyContainer}>
                   <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-                    <Image source={images.no_session} style={{ width: '100%', height: '100%', top:-40 }} />
+                    <Image source={images.no_session} style={{ width: '100%', height: '100%', top: -40 }} />
                   </View>
                   <Text style={styles.emptyText}>Admin hasn't added a session yet</Text>
                 </View>
@@ -125,7 +138,7 @@ const SessionSelectScreen = ({ navigation }) => {
               return (
                 <View style={styles.emptyContainer}>
                   <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-                    <Image source={images.not_found} style={{ width: '100%', height: '100%', top:-40 }} />
+                    <Image source={images.not_found} style={{ width: '100%', height: '100%', top: -40 }} />
                   </View>
                   <Text style={styles.emptyText}>Course not found</Text>
                 </View>
