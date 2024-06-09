@@ -46,7 +46,9 @@ const LoginScreen = ({ navigation }) => {
       <Image source={images.login_pic} style={{ width: '100%', height: '45%' }} />
       <View style={styles.inputView}>
         <View style={styles.iconContainer}>
-          <AntDesign name="user" size={20} color="gray" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.user} style={{height:'100%', width:'100%',tintColor: 'gray' }}/>
+            </View>
         </View>
         <TextInput
           style={styles.inputText}
@@ -57,7 +59,9 @@ const LoginScreen = ({ navigation }) => {
       </View>
       <View style={styles.inputView}>
         <View style={styles.iconContainer}>
-          <AntDesign name="lock" size={20} color="gray" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.lock} style={{height:'100%', width:'100%',tintColor: 'gray' }}/>
+            </View>
         </View>
         <TextInput
           style={styles.inputText}
@@ -70,6 +74,8 @@ const LoginScreen = ({ navigation }) => {
       <TouchableOpacity onPress={handleLoginPress} style={styles.loginBtn}>
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
+
+      <Text onPress={()=> navigation.navigate('SignUpScreen')} style={{color:'#1e90ff',marginTop:10}}>Don't have an account?Sign in</Text>
     </View>
   );
 };
@@ -79,7 +85,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffff'
+    backgroundColor: '#ffff',
+    marginTop:15,
   },
   title: {
     fontWeight: 'bold',

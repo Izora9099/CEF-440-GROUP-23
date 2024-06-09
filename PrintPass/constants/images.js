@@ -20,7 +20,11 @@ const images = {
     delete: require('../assets/images/delete.png'),
     edit: require('../assets/images/edit.png'),
     add: require('../assets/images/plus.png'),
-    close: require('../assets/images/close.png')
+    close: require('../assets/images/close.png'),
+    lock: require('../assets/images/lock.png'),
+    user: require('../assets/images/user.png'),
+    name: require('../assets/images/name.png'),
+    signup: require('../assets/images/signup.jpg')
   };
   
   export default images;
