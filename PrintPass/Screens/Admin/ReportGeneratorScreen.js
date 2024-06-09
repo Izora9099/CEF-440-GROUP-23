@@ -25,7 +25,9 @@ const ReportGeneratorScreen = ({ navigation }) => {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#1E90FF" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
         </TouchableOpacity>
         <Text style={styles.headerText}>Report Generator</Text>
         <View />

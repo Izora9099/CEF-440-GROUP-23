@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, Dimensio
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../Firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import images from '../../constants/images';
@@ -61,11 +62,15 @@ const SessionSelectScreen = ({ navigation }) => {
       <View style={styles.flexRow}>
         <View style={styles.flexDate}>
           <View style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
-            <FontAwesome name="calendar" size={17} color="#1E90FF" />
+            <View style={{height:20, width:20,}}>
+               <Image source={images.calendar_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
           </View>
           <View style={{ display: 'flex', flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }}>
-            <FontAwesome name="clock-o" size={20} color="#1E90FF" />
+          <View style={{height:20, width:20,}}>
+               <Image source={images.clock_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
           </View>
         </View>
@@ -78,7 +83,9 @@ const SessionSelectScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" translucent={true} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#1E90FF" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
         </TouchableOpacity>
         <Text style={styles.headerText}>Sessions</Text>
         <View />

@@ -16,7 +16,7 @@ const ModeScreen = ({navigation}) => {
     
       <View className="gap-5 mt-10">
       <TouchableOpacity 
-      onPress={() => navigation.navigate("StudentRegisterScreen")}
+      onPress={() => navigation.navigate("SessionScreen")}
       style={styles.button}>
          <Text style={styles.buttonText}>Admin</Text>
       </TouchableOpacity>

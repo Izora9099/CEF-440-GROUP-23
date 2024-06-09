@@ -19,12 +19,19 @@ const SessionScreen = () => {
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [sessions, setSessions] = useState([]);
+  const [error, setError] = useState(false); // Error state
 
   useEffect(() => {
     const fetchSessions = async () => {
-      const querySnapshot = await getDocs(collection(firestore, 'sessions'));
-      const sessionsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSessions(sessionsList);
+      try {
+        const querySnapshot = await getDocs(collection(firestore, 'sessions'));
+        const sessionsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSessions(sessionsList);
+        setError(false); // Reset error state on success
+      } catch (error) {
+        console.error('Error fetching sessions: ', error);
+        setError(true); // Set error state on failure
+      }
     };
 
     fetchSessions();
@@ -106,10 +113,14 @@ const SessionScreen = () => {
           <Text style={[styles.itemText, styles.font]}>{item.courseCode}</Text>
           <View style={styles.iconContainer}>
             <TouchableOpacity style={styles.iconButton} onPress={() => handleEditSession(item.id)}>
-              <Icon name="create-outline" size={22} color="#1E90FF" />
+            <View style={{height:20, width:20,}}>
+               <Image source={images.edit} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteSession(item.id)}>
-              <Icon name="trash-outline" size={22} color="#FF6347" />
+              <View style={{height:20, width:20,}}>
+               <Image source={images.delete} style={{height:'100%', width:'100%',tintColor: '#FF6347' }}/>
+            </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -120,11 +131,15 @@ const SessionScreen = () => {
       <View style={styles.flexRow}>
         <View style={styles.flexDate}>
           <View style={{display:'flex', flexDirection:'row', gap:4, justifyContent:'center', alignItems:'center'}}>
-            <FontAwesome name="calendar" size={17} color="#1E90FF" />
+          <View style={{height:20, width:20,}}>
+               <Image source={images.calendar_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.day}</Text>
           </View>
           <View style={{display:'flex', flexDirection:'row', gap:5, justifyContent:'center', alignItems:'center'}}>
-            <FontAwesome name="clock-o" size={20} color="#1E90FF" />
+          <View style={{height:20, width:20,}}>
+               <Image source={images.clock_icon} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             <Text style={[styles.itemText, styles.smallFont]}>{item.time}</Text>
           </View>
         </View>
@@ -137,30 +152,42 @@ const SessionScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" translucent={true} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#1E90FF" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
         </TouchableOpacity>
         <Text style={styles.headerText}>Sessions</Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <View style={styles.flex}>
-            <Text className='text-[#1E90FF]'>Add</Text>
-            <Icon name="add" size={24} color="#1E90FF" />
+            <Text className='text-[#1E90FF]'>Add  </Text>
+            <View style={{height:15, width:15,}}>
+               <Image source={images.add} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
           </View>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={sessions}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-              <Image source={images.add} style={{ width: '100%', height: '100%' }} />
+      {error ? (
+        <View style={styles.emptyContainer}>
+          <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                <Image source={images.error} style={{ width: '100%', height: '100%' }} />
             </View>
-            <Text style={styles.emptyText}>Add A Session...</Text>
-          </View>
-        )}
-      />
+        </View>
+      ) : (
+        <FlatList
+          data={sessions}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyContainer}>
+              <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
+                <Image source={images.add_session} style={{ width: '100%', height: '100%' }} />
+              </View>
+              <Text style={styles.emptyText}>Add A Session...</Text>
+            </View>
+          )}
+        />
+      )}
       <Modal
         animationType="slide"
         transparent={true}
@@ -174,7 +201,9 @@ const SessionScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-              <Icon name="close" size={24} color="#1E90FF" />
+            <View style={{height:15, width:15,}}>
+               <Image source={images.close} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>{editMode ? 'Edit Session' : 'Add New Session'}</Text>
             <TextInput

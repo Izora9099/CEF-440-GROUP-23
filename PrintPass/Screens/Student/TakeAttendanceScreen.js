@@ -114,7 +114,9 @@ const TakeAttendanceScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={30} color="#1E90FF" />
+        <View style={{height:20, width:20,}}>
+               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
+            </View>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Mark Attendance</Text>
       </View>
