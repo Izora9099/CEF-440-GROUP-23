@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing,
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { firestore } from '../../Firebase';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore'; // Import query and where
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Crypto from 'expo-crypto';
 import images from '../../constants/images';
@@ -66,20 +66,34 @@ const TakeAttendanceScreen = () => {
         });
 
         if (studentMatch) {
-          const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-          const attendanceRecord = {
-            studentName: studentMatch.name,
-            courseCode: courseCode,
-            courseName: courseName,
-            day: day,
-            time: time,
-            date: date
-          };
+          const currentDate = new Date();
+          const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()} ${currentDate.getHours()}:${currentDate.getMinutes()}`;
+          const attendanceQuery = query(
+            collection(firestore, 'attendances'),
+            where('studentName', '==', studentMatch.name),
+            where('courseCode', '==', courseCode),
+            where('date', '==', formattedDate)
+          );
 
-          await addDoc(collection(firestore, 'attendances'), attendanceRecord);
+          const attendanceSnapshot = await getDocs(attendanceQuery);
 
-          setAttendanceData(attendanceRecord);
-          setIsModalVisible(true);
+          if (attendanceSnapshot.empty) {
+            const attendanceRecord = {
+              studentName: studentMatch.name,
+              courseCode: courseCode,
+              courseName: courseName,
+              day: day,
+              time: time,
+              date: formattedDate
+            };
+
+            await addDoc(collection(firestore, 'attendances'), attendanceRecord);
+
+            setAttendanceData(attendanceRecord);
+            setIsModalVisible(true);
+          } else {
+            Alert.alert('Duplicate Entry', `${studentMatch.name}, your attendance has already been taken.`);
+          }
         } else {
           Alert.alert('Error', 'Authentication failed. Please check your unique identifier and try again.');
         }
