@@ -21,7 +21,7 @@ const ModeScreen = ({navigation}) => {
          <Text style={styles.buttonText}>Admin</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
       onPress={() => navigation.navigate("SessionSelectScreen")}
       style={styles.button}>
          <Text style={styles.buttonText}>Student</Text>

@@ -34,6 +34,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
         </View>
 
       <View style={styles.formContainer}>
+      <Text style={{textAlign:'center', marginTop:10, marginBottom:20}}>Enter data to generate the attendance report  </Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -70,18 +71,30 @@ const ReportGeneratorScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.exportOptions}>
-        <TouchableOpacity style={styles.exportButton}>
-        <FontAwesome name="file-pdf-o" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.exportButton}>
-          <Ionicons name="document-text" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.exportButton}>
-        <FontAwesome name="file-excel-o" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.exportButton}>
-        <Feather name="share-2" size={24} color="black" />
-        </TouchableOpacity>
+      <TouchableOpacity>
+      <View style={{height:40, width:40,}}>
+               <Image source={images.pdf} style={{height:'100%', width:'100%' }}/>
+            </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+      <View style={{height:40, width:40,}}>
+               <Image source={images.excel} style={{height:'100%', width:'100%' }}/>
+            </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+      <View style={{height:40, width:40,}}>
+               <Image source={images.documents} style={{height:'100%', width:'100%' }}/>
+            </View>
+      </TouchableOpacity>
+       
+      <TouchableOpacity>
+      <View style={{height:40, width:40,}}>
+               <Image source={images.share} style={{height:'100%', width:'100%' }}/>
+            </View>
+      </TouchableOpacity>
+
       </View>
 
      
@@ -99,11 +112,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
-    paddingVertical: 15,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+    paddingVertical: 12,
+    backgroundColor: '#f5f5f5',
     width: '100%',
-    paddingTop: 20,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: {
@@ -157,25 +168,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 20,
+    marginBottom:20,
   },
-  exportButton: {
-    backgroundColor: '#f2f2f2',
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  backButtonFooter: {
-    backgroundColor: '#1E90FF',
-    padding: 15,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
+ 
 });
 
 export default ReportGeneratorScreen;

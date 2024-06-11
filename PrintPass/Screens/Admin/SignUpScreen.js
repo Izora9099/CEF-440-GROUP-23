@@ -127,7 +127,7 @@ const SignUpScreen = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={{ fontWeight: 'bold',fontSize: 20,color: '#1E90FF',marginBottom: 15,}}>Login Successful</Text>
+            <Text style={{ fontWeight: 'bold',fontSize: 20,color: '#1E90FF',marginBottom: 15,}}>Sign Up Successful</Text>
             <Text style={styles.modalText}>{name}</Text>
             <Text style={styles.modalText1}> You are now an admin</Text>
             <TouchableOpacity style={styles.modalButton} onPress={handleModalClose}>

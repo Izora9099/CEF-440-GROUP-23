@@ -24,7 +24,11 @@ const images = {
     lock: require('../assets/images/lock.png'),
     user: require('../assets/images/user.png'),
     name: require('../assets/images/name.png'),
-    signup: require('../assets/images/signup.jpg')
+    signup: require('../assets/images/signup.jpg'),
+    share: require('../assets/images/share.png'),
+    pdf: require('../assets/images/pdf.png'),
+    excel: require('../assets/images/excel.png'),
+    documents: require('../assets/images/documents.png')
   };
   
   export default images;

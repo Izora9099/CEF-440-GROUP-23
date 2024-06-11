@@ -7,7 +7,7 @@ import { firestore } from '../../Firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import images from '../../constants/images';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth , height: screenHeight } = Dimensions.get('window');
 
 const SessionScreen = () => {
   const navigation = useNavigation();
@@ -169,7 +169,7 @@ const SessionScreen = () => {
       {error ? (
         <View style={styles.emptyContainer}>
           <View style={{ height: "60%", width: screenWidth - 40, alignItems: 'center', justifyContent: 'center' }}>
-                <Image source={images.error} style={{ width: '100%', height: '100%' }} />
+                <Image source={images.err} style={{ width: '100%', height: '100%' }} />
             </View>
         </View>
       ) : (
@@ -256,7 +256,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#f5f5f5',
     width: '100%',
-    paddingTop: 20,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: {
