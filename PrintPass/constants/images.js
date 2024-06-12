@@ -28,7 +28,8 @@ const images = {
     share: require('../assets/images/share.png'),
     pdf: require('../assets/images/pdf.png'),
     excel: require('../assets/images/excel.png'),
-    documents: require('../assets/images/documents.png')
+    documents: require('../assets/images/documents.png'),
+    student: require('../assets/images/student.png'),
   };
   
   export default images;

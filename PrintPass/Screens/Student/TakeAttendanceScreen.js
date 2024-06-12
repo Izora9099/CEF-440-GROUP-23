@@ -1,9 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, StatusBar, Image, Dimensions, Animated, Easing, ActivityIndicator, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Image,
+  Dimensions,
+  Animated,
+  Easing,
+  ActivityIndicator,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  Alert,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { firestore } from '../../Firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore'; // Import query and where
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Crypto from 'expo-crypto';
 import images from '../../constants/images';
@@ -33,7 +46,6 @@ const TakeAttendanceScreen = () => {
 
   useEffect(() => {
     if (isModalVisible) {
-      // Clear text input when modal is visible
       setUniqueIdentifier('');
     }
   }, [isModalVisible]);
@@ -80,11 +92,12 @@ const TakeAttendanceScreen = () => {
           if (attendanceSnapshot.empty) {
             const attendanceRecord = {
               studentName: studentMatch.name,
+              matricule: studentMatch.matricule, // Added matricule
               courseCode: courseCode,
               courseName: courseName,
               day: day,
               time: time,
-              date: formattedDate
+              date: formattedDate,
             };
 
             await addDoc(collection(firestore, 'attendances'), attendanceRecord);
@@ -114,9 +127,7 @@ const TakeAttendanceScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <View style={{height:20, width:20,}}>
-               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#1E90FF' }}/>
-            </View>
+          <Image source={images.left_arrow} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Mark Attendance</Text>
       </View>
@@ -149,6 +160,8 @@ const TakeAttendanceScreen = () => {
             placeholder="Enter Unique Identifier"
             value={uniqueIdentifier}
             onChangeText={setUniqueIdentifier}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
           <TouchableOpacity style={styles.fingerprintContainer} onPress={handleFingerprintAuthentication}>
@@ -164,7 +177,7 @@ const TakeAttendanceScreen = () => {
             <View style={styles.modalContainer}>
               <View style={styles.modalView}>
                 <Text style={styles.modalTitle}>Attendance Taken ✅</Text>
-                <View style={{justifyContent:'center', alignItems:'center'}}>
+                <View style={styles.modalContent}>
                   <Text style={styles.modalTextBold}>{attendanceData.studentName}</Text>
                   <Text style={styles.modalText}>Your attendance has been taken</Text>
                 </View>
@@ -177,8 +190,8 @@ const TakeAttendanceScreen = () => {
         </>
       ) : (
         <View style={styles.closingSessionContainer}>
-          <View style={{ height: "60%", width: screenWidth - 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'red' }}>
-            <Image source={images.error} style={{ width: '100%', height: '100%' }} />
+          <View style={styles.errorImageContainer}>
+            <Image source={images.error} style={styles.errorImage} />
           </View>
           <ActivityIndicator size={100} color="#1E90FF" />
           <Text style={styles.closingSessionText}>Closing session...</Text>
@@ -187,8 +200,6 @@ const TakeAttendanceScreen = () => {
     </View>
   );
 };
-
-export default TakeAttendanceScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -206,6 +217,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 10,
   },
+  backIcon: {
+    height: 20,
+    width: 20,
+    tintColor: '#1E90FF',
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -214,21 +230,14 @@ const styles = StyleSheet.create({
   box: {
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'column',
-    backgroundColor: "#1E90FF",
+    backgroundColor: '#1E90FF',
     padding: 15,
     margin: 10,
-    marginLeft: '6%',
-    marginTop: '5%',
+    marginHorizontal: '5%',
     borderRadius: 10,
     width: '90%',
-    height: 150,
-    gap: 15,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -239,13 +248,12 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
   },
   timeItem: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: -5,
+    marginHorizontal: 5,
   },
   iconContainer: {
     padding: 10,
@@ -328,21 +336,25 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 15,
-    color:'#1E90FF'
+    color: '#1E90FF',
+  },
+  modalContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTextBold: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   modalText: {
     fontSize: 16,
     marginBottom: 10,
   },
-  modalTextBold: {
-    fontSize: 20,
-    marginBottom: 10,
-    fontWeight: 'bold'
-  },
   modalButton: {
     backgroundColor: '#1E90FF',
     padding: 10,
-    paddingHorizontal:20,
+    paddingHorizontal: 20,
     borderRadius: 10,
     marginTop: 15,
   },
@@ -351,4 +363,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  errorImageContainer: {
+    height: '60%',
+    width: screenWidth - 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'red',
+  },
+  errorImage: {
+    width: '100%',
+    height: '100%',
+  },
 });
+
+export default TakeAttendanceScreen;

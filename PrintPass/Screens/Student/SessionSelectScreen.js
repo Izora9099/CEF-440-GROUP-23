@@ -94,7 +94,7 @@ const SessionSelectScreen = ({ navigation }) => {
             <Image source={images.left_arrow} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
           </View>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Sessions</Text>
+        <Text style={styles.headerText}>Select Session</Text>
         <View />
       </View>
 
