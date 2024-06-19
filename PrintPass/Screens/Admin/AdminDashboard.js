@@ -35,8 +35,16 @@ const AdminDashboard = () => {
 
   return (
     <View style={styles.container}>
+   
       <View style={styles.header}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={{height:20, width:20,}}>
+               <Image source={images.left_arrow} style={{height:'100%', width:'100%',tintColor: '#fff',  }}/>
+            </View>
+        </TouchableOpacity>
         <Text style={styles.headerText}>Admin Dashboard</Text>
+        
+        <View />
       </View>
     
           <View style={styles.reportHeader}>
@@ -76,10 +84,13 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#1E90FF',
+    display:'flex',
+    flexDirection:'row',
     paddingVertical: 20,
     paddingHorizontal: 16,
     marginBottom: 20,
     alignItems: 'center',
+    gap:50,
     justifyContent: 'center',
     elevation: 5,
     position: 'absolute',
