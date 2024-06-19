@@ -18,7 +18,7 @@ const StarterScreen = ({navigation}) => {
 </View>
     <Image source={images.logo} style={styles.logo} />
       <TouchableOpacity 
-      onPress={() => navigation.replace("IntroScreen")}
+       onPress={() => navigation.replace("IntroScreen")} 
       style={styles.button}>
          <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>

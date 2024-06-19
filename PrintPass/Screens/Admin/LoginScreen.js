@@ -8,6 +8,7 @@ import images from '../../constants/images';
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+   
 
   const handleUsernameChange = (text) => {
     setUsername(text);
@@ -29,8 +30,11 @@ const LoginScreen = ({ navigation }) => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
+        const adminData = querySnapshot.docs[0].data();
+        const adminName = adminData.admin_name; // Replace 'name' with the actual field name in your Firestore document
+
         console.log('Login Successful')
-        navigation.replace('AdminDashboard'); 
+        navigation.replace('AdminDashboard',{adminName}); 
       } else {
         Alert.alert('Invalid Entry', 'Username or password is incorrect.');
       }

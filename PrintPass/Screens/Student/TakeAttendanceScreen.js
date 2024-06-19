@@ -8,11 +8,11 @@ import {
   Dimensions,
   Animated,
   Easing,
-  ActivityIndicator,
   TouchableOpacity,
   TextInput,
   Modal,
   Alert,
+  Platform
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { firestore } from '../../Firebase';
@@ -24,10 +24,11 @@ import images from '../../constants/images';
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 const TakeAttendanceScreen = () => {
-  const [showClosingSession, setShowClosingSession] = useState(false);
   const [uniqueIdentifier, setUniqueIdentifier] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [attendanceData, setAttendanceData] = useState({});
+  const [timeLeft, setTimeLeft] = useState(1); // 2 hours in seconds
+  const [sessionEnded, setSessionEnded] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { courseCode, courseName, day, time } = route.params;
@@ -45,15 +46,32 @@ const TakeAttendanceScreen = () => {
   }, [lineAnimation]);
 
   useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          setSessionEnded(true);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     if (isModalVisible) {
       setUniqueIdentifier('');
     }
   }, [isModalVisible]);
 
-  const translateY = lineAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-115, 100],
-  });
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   const handleFingerprintAuthentication = async () => {
     try {
@@ -121,19 +139,28 @@ const TakeAttendanceScreen = () => {
 
   const closeModal = () => {
     setIsModalVisible(false);
+    navigation.navigate('StudentIntroScreen');
   };
+
+  const translateY = lineAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-120, 100], // Adjust as necessary
+  });
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Image source={images.left_arrow} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mark Attendance</Text>
-      </View>
-
-      {!showClosingSession ? (
+      {!sessionEnded ? (
         <>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <View style={{ height: 20, width: 20 }}>
+                <Image source={images.left_arrow} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Mark Attendance</Text>
+            <View />
+          </View>
+
           <View style={styles.box}>
             <View style={styles.courseRow}>
               <Text style={styles.font}>{courseCode}-</Text>
@@ -171,6 +198,12 @@ const TakeAttendanceScreen = () => {
 
           <View style={styles.instructionContainer}>
             <Text style={styles.instructionText}>Place registered finger on scanner</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: "red", borderRadius: 30, width: 130, top: 20 }}>
+              <View style={styles.iconContainer}>
+                <Image source={images.alarm} style={{ width: 30, height: 30 }} />
+              </View>
+              <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+            </View>
           </View>
 
           <Modal visible={isModalVisible} transparent={true} animationType="slide">
@@ -189,12 +222,26 @@ const TakeAttendanceScreen = () => {
           </Modal>
         </>
       ) : (
-        <View style={styles.closingSessionContainer}>
-          <View style={styles.errorImageContainer}>
-            <Image source={images.error} style={styles.errorImage} />
+        <View style={styles.sessionEndedContainer}>
+          <Text style={styles.sessionEndedText}>{`${courseName} session is over`}</Text>
+          <View style={{ height: "55%", width: '80%', alignItems: 'center', justifyContent: 'center' }} className="gap-5 mt-10">
+                <Image source={images.ended_session} style={{ width: '100%', height: '100%' }} />
           </View>
-          <ActivityIndicator size={100} color="#1E90FF" />
-          <Text style={styles.closingSessionText}>Closing session...</Text>
+
+          <View className="gap-5 mt-10">
+      <TouchableOpacity 
+      onPress={() => navigation.navigate("StudentIntroScreen")}
+      style={styles.button}>
+         <Text style={styles.buttonText}>Next Session</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+      onPress={() => navigation.navigate("StudentIntroScreen")}
+      style={styles.button1}>
+         <Text style={styles.buttonText}>End Sessions</Text>
+      </TouchableOpacity>
+
+      </View>
         </View>
       )}
     </View>
@@ -205,13 +252,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: StatusBar.currentHeight + 5,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 15,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: '#f5f5f5',
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
   },
   backButton: {
     position: 'absolute',
@@ -225,15 +282,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#1E90FF',
   },
   box: {
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#1E90FF',
-    padding: 15,
-    margin: 10,
-    marginHorizontal: '5%',
+    padding: 20,
+    marginVertical: 10,
+    marginHorizontal: 20,
     borderRadius: 10,
     width: '90%',
     shadowColor: '#000',
@@ -260,8 +316,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   icon: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
   },
   font: {
     fontSize: 16,
@@ -309,15 +365,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-  closingSessionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closingSessionText: {
-    fontSize: 16,
-    marginTop: 10,
-    color: '#1E90FF',
+  timerText: {
+    fontSize: 15,
+    color: 'red',
   },
   modalContainer: {
     flex: 1,
@@ -363,16 +413,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  errorImageContainer: {
-    height: '60%',
-    width: screenWidth - 10,
-    alignItems: 'center',
+  sessionEndedContainer: {
+    flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'red',
+    alignItems: 'center',
   },
-  errorImage: {
-    width: '100%',
-    height: '100%',
+  sessionEndedText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000', // Adjust color as needed
+  },
+  button: {
+    backgroundColor: '#1E90FF',
+    padding: 20,
+    borderRadius: 30,
+    width:300,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+  },
+  button1: {
+    backgroundColor: '#FF6347',
+    padding: 20,
+    borderRadius: 30,
+    width:300,
+    alignItems: 'center',
   },
 });
 

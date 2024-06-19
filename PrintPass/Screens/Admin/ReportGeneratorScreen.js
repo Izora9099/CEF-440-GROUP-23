@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, Image, ScrollView, StatusBar } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, Image, ScrollView, StatusBar, Platform } from 'react-native';
 import { Table, Row, Rows } from 'react-native-table-component';
 import { firestore } from '../../Firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import images from '../../constants/images';
+import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import * as DocumentPicker from 'expo-document-picker';
 
-const { width: screenWidth } = Dimensions.get('window');
+
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const ReportGeneratorScreen = ({ navigation }) => {
   const [course, setCourse] = useState('');
@@ -64,6 +70,77 @@ const ReportGeneratorScreen = ({ navigation }) => {
     }
   };
 
+  const exportToPDF = async () => {
+    if (!reportData) {
+      Alert.alert('Error', 'No report data to export.');
+      return;
+    }
+
+    let htmlContent = `
+      <html>
+      <head>
+        <style>
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+          }
+          th {
+            background-color: #f1f1f1;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Attendance Report for ${course} on ${timestamp} at period ${sessionTime}</h1>
+        <p>${reportData.length} students were present</p>
+        <table>
+          <tr>
+            <th>Names</th>
+            <th>Matricule</th>
+            <th>Date</th>
+          </tr>`;
+
+    reportData.forEach(row => {
+      htmlContent += `
+        <tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+        </tr>`;
+    });
+
+    htmlContent += `</table></body></html>`;
+
+    try {
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false,
+      });
+      Alert.alert('Success', `PDF saved to ${uri}`);
+      
+      // Save the PDF file to external storage
+      const fileName = `report_${Date.now()}.pdf`;
+      const externalDirectory = FileSystem.documentDirectory + 'reports/';
+      const filePath = externalDirectory + fileName;
+
+      await FileSystem.makeDirectoryAsync(externalDirectory, { intermediates: true });
+
+      await FileSystem.writeAsStringAsync(filePath, '', { encoding: FileSystem.EncodingType.UTF8 });
+      await FileSystem.writeAsStringAsync(filePath, uri, { encoding: FileSystem.EncodingType.Base64 });
+
+      // Let the user pick the location to save the file
+      await DocumentPicker.getDocumentAsync({ type: 'application/pdf', copyToCacheDirectory: false, initialFile: filePath });
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred while creating the PDF.');
+    }
+  };
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -141,7 +218,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.exportOptions}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={exportToPDF}>
             <View style={{ height: 30, width: 30 }}>
               <Image source={images.pdf} style={{ height: '100%', width: '100%' }} />
             </View>
@@ -177,7 +254,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     backgroundColor: '#fff',
-    paddingTop: 80, // Add padding to account for the fixed header
+    paddingTop: 90, // Add padding to account for the fixed header
   },
   header: {
     position: 'absolute',
@@ -189,7 +266,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 12,
-    paddingTop:40,
+    paddingTop: screenHeight/15,
     backgroundColor: '#f5f5f5',
     width: '100%',
     elevation: 4,
@@ -239,6 +316,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 300,
     marginBottom: 4,
+    top:-10,
   },
   reportHeader: {
     padding: 16,

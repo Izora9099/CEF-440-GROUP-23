@@ -30,6 +30,13 @@ const images = {
     excel: require('../assets/images/excel.png'),
     documents: require('../assets/images/documents.png'),
     student: require('../assets/images/student.png'),
+    student_intro: require('../assets/images/student_intro.jpg'),
+    alarm: require('../assets/images/alarm.png'),
+    ended_session: require('../assets/images/ended_session.jpg'),
+    admin: require('../assets/images/admin.png'),
+    add_student: require('../assets/images/add_student.png'),
+    add_session:require('../assets/images/add_session.jpg'),
+    reports: require('../assets/images/reports.png')
   };
   
   export default images;

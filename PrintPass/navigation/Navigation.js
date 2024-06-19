@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+
 import StarterScreen from '../Screens/StarterScreen';
 import IntroScreen from '../Screens/IntroScreen';
 import ModeScreen from '../Screens/ModeScreen';
@@ -13,13 +14,12 @@ import SignUpScreen from '../Screens/Admin/SignUpScreen';
 import SessionScreen from '../Screens/Admin/SessionScreen';
 import StudentRegisterScreen from '../Screens/Admin/StudentRegisterScreen';
 import ReportGeneratorScreen from '../Screens/Admin/ReportGeneratorScreen';
+import AdminDashboard from '../Screens/Admin/AdminDashboard';
 
 {/* student screens */}
 import SessionSelectScreen from '../Screens/Student/SessionSelectScreen';
 import TakeAttendanceScreen from '../Screens/Student/TakeAttendanceScreen';
-import AdminDashboard from '../Screens/Admin/AdminDashboard';
-
-
+import StudentIntroScreen from '../Screens/Student/StudentIntroScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -43,10 +43,15 @@ function Navigation() {
 
 
         {/**student screens */}
+        <Stack.Screen name="StudentIntroScreen" component={StudentIntroScreen} />
         <Stack.Screen name="SessionSelectScreen" component={SessionSelectScreen} />
         <Stack.Screen name="TakeAttendanceScreen" component={TakeAttendanceScreen} />
-        
+
       </Stack.Navigator>
+
+
+
+
     </NavigationContainer>
   );
 }
