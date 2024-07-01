@@ -5,9 +5,9 @@ import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome icons
 import images from '../../constants/images';
 
 const data = [
-  { id: '1', title: 'Register Student', screenName: 'Screen1', pic: require('../../assets/images/add_student.png') },
-  { id: '2', title: 'Create Session', screenName: 'Screen2',  pic: require('../../assets/images/session.png') },
-  { id: '3', title: 'Generate Reports', screenName: 'Screen3',  pic: require('../../assets/images/reports.png')  },
+  { id: '1', title: 'Register Student', screenName: 'StudentRgisterScreen', pic: require('../../assets/images/add_student.png') },
+  { id: '2', title: 'Create Session', screenName: 'SessionScreen',  pic: require('../../assets/images/session.png') },
+  { id: '3', title: 'Generate Reports', screenName: 'ReportGeneratorScreen',  pic: require('../../assets/images/reports.png')  },
 ];
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
