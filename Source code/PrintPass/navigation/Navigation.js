@@ -39,8 +39,7 @@ function Navigation() {
         <Stack.Screen name="SessionScreen" component={SessionScreen} />
         <Stack.Screen name="StudentRegisterScreen" component={StudentRegisterScreen} />
         <Stack.Screen name="ReportGeneratorScreen" component={ReportGeneratorScreen} />
-
-
+        
 
         {/**student screens */}
         <Stack.Screen name="StudentIntroScreen" component={StudentIntroScreen} />

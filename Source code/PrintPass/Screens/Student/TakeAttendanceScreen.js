@@ -27,7 +27,7 @@ const TakeAttendanceScreen = () => {
   const [uniqueIdentifier, setUniqueIdentifier] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [attendanceData, setAttendanceData] = useState({});
-  const [timeLeft, setTimeLeft] = useState(1); // 2 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
   const [sessionEnded, setSessionEnded] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
