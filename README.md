@@ -1,4 +1,4 @@
-# CEF-440-GROUP-23 : Iternet Programming JEE
+# CEF-440-GROUP-23 : Internet Programming JEE
 
 # Group Members
 1. NDIFON LEMUEL ASHU-MBI  => FE21A247
