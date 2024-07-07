@@ -139,7 +139,6 @@ const TakeAttendanceScreen = () => {
 
   const closeModal = () => {
     setIsModalVisible(false);
-    navigation.navigate('StudentIntroScreen');
   };
 
   const translateY = lineAnimation.interpolate({

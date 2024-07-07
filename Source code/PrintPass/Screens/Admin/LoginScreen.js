@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { firestore } from '../../Firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import images from '../../constants/images';
@@ -8,7 +7,7 @@ import images from '../../constants/images';
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-   
+  const [loading, setLoading] = useState(false); // Add state for loading
 
   const handleUsernameChange = (text) => {
     setUsername(text);
@@ -24,6 +23,8 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
+    setLoading(true); // Start loading
+
     try {
       const adminCollection = collection(firestore, 'admin');
       const q = query(adminCollection, where('username', '==', username), where('password', '==', password));
@@ -33,14 +34,16 @@ const LoginScreen = ({ navigation }) => {
         const adminData = querySnapshot.docs[0].data();
         const adminName = adminData.admin_name; // Replace 'name' with the actual field name in your Firestore document
 
-        console.log('Login Successful')
-        navigation.replace('AdminDashboard',{adminName}); 
+        console.log('Login Successful');
+        navigation.replace('AdminDashboard', { adminName });
       } else {
         Alert.alert('Invalid Entry', 'Username or password is incorrect.');
       }
     } catch (error) {
       console.error('Error logging in: ', error);
       Alert.alert('Error', 'An error occurred while trying to log in.');
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -50,9 +53,9 @@ const LoginScreen = ({ navigation }) => {
       <Image source={images.login_pic} style={{ width: '100%', height: '45%' }} />
       <View style={styles.inputView}>
         <View style={styles.iconContainer}>
-        <View style={{height:20, width:20,}}>
-               <Image source={images.user} style={{height:'100%', width:'100%',tintColor: 'gray' }}/>
-            </View>
+          <View style={{ height: 20, width: 20 }}>
+            <Image source={images.user} style={{ height: '100%', width: '100%', tintColor: 'gray' }} />
+          </View>
         </View>
         <TextInput
           style={styles.inputText}
@@ -63,9 +66,9 @@ const LoginScreen = ({ navigation }) => {
       </View>
       <View style={styles.inputView}>
         <View style={styles.iconContainer}>
-        <View style={{height:20, width:20,}}>
-               <Image source={images.lock} style={{height:'100%', width:'100%',tintColor: 'gray' }}/>
-            </View>
+          <View style={{ height: 20, width: 20 }}>
+            <Image source={images.lock} style={{ height: '100%', width: '100%', tintColor: 'gray' }} />
+          </View>
         </View>
         <TextInput
           style={styles.inputText}
@@ -79,7 +82,16 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <Text onPress={()=> navigation.navigate('SignUpScreen')} style={{color:'#1e90ff',marginTop:10}}>Don't have an account?Sign in</Text>
+      <Text onPress={() => navigation.navigate('SignUpScreen')} style={{ color: '#1e90ff', marginTop: 10 }}>
+        Don't have an account? Sign up
+      </Text>
+
+      <Modal transparent={true} visible={loading} animationType="fade">
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size={50} color="#1E90FF" />
+          <Text style={styles.loadingText}>Logging in, please wait...</Text>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -90,7 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffff',
-    marginTop:15,
+    marginTop: 15,
   },
   title: {
     fontWeight: 'bold',
@@ -134,6 +146,17 @@ const styles = StyleSheet.create({
   loginText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: 'white',
   },
 });
 

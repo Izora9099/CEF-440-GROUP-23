@@ -36,7 +36,8 @@ const images = {
     admin: require('../assets/images/admin.png'),
     add_student: require('../assets/images/add_student.png'),
     add_session:require('../assets/images/add_session.jpg'),
-    reports: require('../assets/images/reports.png')
+    reports: require('../assets/images/reports.png'),
+    report_pic: require('../assets/images/result_pic.png')
   };
   
   export default images;

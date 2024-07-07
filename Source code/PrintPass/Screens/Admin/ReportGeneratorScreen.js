@@ -8,8 +8,8 @@ import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import * as DocumentPicker from 'expo-document-picker';
-
-
+import * as Sharing from 'expo-sharing';
+import * as XLSX from 'xlsx';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -75,7 +75,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
       Alert.alert('Error', 'No report data to export.');
       return;
     }
-
+  
     let htmlContent = `
       <html>
       <head>
@@ -96,14 +96,14 @@ const ReportGeneratorScreen = ({ navigation }) => {
       </head>
       <body>
         <h1>Attendance Report for ${course} on ${timestamp} at period ${sessionTime}</h1>
-        <p>${reportData.length} students were present</p>
+        <p>${reportData.length} student(s) present</p>
         <table>
           <tr>
             <th>Names</th>
             <th>Matricule</th>
             <th>Date</th>
           </tr>`;
-
+  
     reportData.forEach(row => {
       htmlContent += `
         <tr>
@@ -112,9 +112,9 @@ const ReportGeneratorScreen = ({ navigation }) => {
           <td>${row[2]}</td>
         </tr>`;
     });
-
+  
     htmlContent += `</table></body></html>`;
-
+  
     try {
       const { uri } = await Print.printToFileAsync({
         html: htmlContent,
@@ -122,25 +122,67 @@ const ReportGeneratorScreen = ({ navigation }) => {
       });
       Alert.alert('Success', `PDF saved to ${uri}`);
       
+      // Format sessionTime without ':00'
+      const sessionTimeFormatted = sessionTime.replace(':00', '');
+  
+      // Construct PDF filename
+      const filename = `${course}_att_${sessionTimeFormatted}_${timestamp}.pdf`;
+  
       // Save the PDF file to external storage
-      const fileName = `report_${Date.now()}.pdf`;
       const externalDirectory = FileSystem.documentDirectory + 'reports/';
-      const filePath = externalDirectory + fileName;
-
+      const filePath = externalDirectory + filename;
+  
       await FileSystem.makeDirectoryAsync(externalDirectory, { intermediates: true });
-
+  
       await FileSystem.writeAsStringAsync(filePath, '', { encoding: FileSystem.EncodingType.UTF8 });
       await FileSystem.writeAsStringAsync(filePath, uri, { encoding: FileSystem.EncodingType.Base64 });
-
+  
       // Let the user pick the location to save the file
-      await DocumentPicker.getDocumentAsync({ type: 'application/pdf', copyToCacheDirectory: false, initialFile: filePath });
+      await Sharing.shareAsync(uri);
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while creating the PDF.');
     }
   };
+  
+  
+  const exportToExcel = async () => {
+  if (!reportData) {
+    Alert.alert('Error', 'No report data to export.');
+    return;
+  }
+
+  const sessionTimeFormatted = sessionTime.replace(':00', '');
+
+  const filename = `${course}_att_${timestamp}_${sessionTimeFormatted}.xlsx`;
+
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Names', 'Matricule', 'Date'],
+    ...reportData
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
+  const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+
+  const uri = FileSystem.documentDirectory + filename;
+
+  try {
+    await FileSystem.writeAsStringAsync(uri, wbout, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    Alert.alert('Success', `Excel file saved as ${filename}`);
+
+    // Open the file
+    await Sharing.shareAsync(uri);
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Error', 'An error occurred while saving the Excel file.');
+  }
+};
 
   
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -175,7 +217,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Timestamp (day-month-year)"
+              placeholder="Date (day-month-year)"
               value={timestamp}
               onChangeText={setTimestamp}
             />
@@ -189,12 +231,12 @@ const ReportGeneratorScreen = ({ navigation }) => {
           {reportData ? (
             <>
               <View style={styles.reportHeader}>
-                <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Attendance Report for {course} on {timestamp} at period {sessionTime}</Text>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Attendance Report for {course} on {timestamp} at period {sessionTime} </Text>
                 <View style={{ display: 'flex', flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                   <View style={{ height: 25, width: 25 }}>
                     <Image source={images.student} style={{ height: '100%', width: '100%', tintColor: '#1E90FF' }} />
                   </View>
-                  <Text style={{ fontWeight: 'bold' }}>{reportData.length} students were present</Text>
+                  <Text style={{ fontWeight: 'bold' }}>{reportData.length} student(s) present</Text>
                 </View>
               </View>
 
@@ -224,7 +266,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={exportToExcel}>
             <View style={{ height: 30, width: 30 }}>
               <Image source={images.excel} style={{ height: '100%', width: '100%' }} />
             </View>
@@ -236,11 +278,7 @@ const ReportGeneratorScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <View style={{ height: 30, width: 30 }}>
-              <Image source={images.share} style={{ height: '100%', width: '100%' }} />
-            </View>
-          </TouchableOpacity>
+          
         </View>
       </ScrollView>
     </View>

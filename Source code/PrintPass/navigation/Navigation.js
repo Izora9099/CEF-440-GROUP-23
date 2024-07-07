@@ -15,6 +15,7 @@ import SessionScreen from '../Screens/Admin/SessionScreen';
 import StudentRegisterScreen from '../Screens/Admin/StudentRegisterScreen';
 import ReportGeneratorScreen from '../Screens/Admin/ReportGeneratorScreen';
 import AdminDashboard from '../Screens/Admin/AdminDashboard';
+import ReportIntroScreen from '../Screens/Admin/ReportIntroScreen';
 
 {/* student screens */}
 import SessionSelectScreen from '../Screens/Student/SessionSelectScreen';
@@ -38,6 +39,7 @@ function Navigation() {
         <Stack.Screen name='AdminDashboard' component={AdminDashboard}/>
         <Stack.Screen name="SessionScreen" component={SessionScreen} />
         <Stack.Screen name="StudentRegisterScreen" component={StudentRegisterScreen} />
+        <Stack.Screen name="ReportIntroScreen" component={ReportIntroScreen} />
         <Stack.Screen name="ReportGeneratorScreen" component={ReportGeneratorScreen} />
         
 
